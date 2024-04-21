@@ -46,6 +46,7 @@ namespace SudaWebLogger {
             AnsiConsole.Markup("\n");
 
             SendConnectRequest();
+            Paused();
         }
 
         private static void ShowTitle() {
