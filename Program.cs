@@ -56,7 +56,7 @@ namespace SudaWebLogger {
 
         private static void ShowProfilePath() {
             AnsiConsole.Markup("[black on white]读取的配置文件路径[/]  ");
-            AnsiConsole.Write(new TextPath("./cofig.ini")
+            AnsiConsole.Write(new TextPath("./config.ini")
                 .RootStyle(new Style(foreground: Color.Grey35))
                 .StemStyle(new Style(foreground: Color.Grey35))
                 .SeparatorStyle(new Style(foreground: Color.Grey35))
