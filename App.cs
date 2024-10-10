@@ -41,7 +41,12 @@ namespace SudaEasyWebLogger {
           _hasChangedProfile = true;
         } else if (userAction == UserAction.LogInOrRetry) {
           string ip = string.Empty;
-          if (!_loginService.TryGetIp(ref ip)) {
+          bool ipRetrieved = AnsiConsole.Status()
+            .Spinner(Spinner.Known.Dots)
+            .Start("正在获取 IP 地址...", ctx => {
+              return _loginService.TryGetIp(ref ip);
+            });
+          if (!ipRetrieved) {
             AnsiConsole.MarkupLine("\n[red]无法获取本机 IP 地址[/]\n");
             AnsiConsole.MarkupLine(
               "请检查你的[yellow]互联网连接情况[/], 或者是你[yellow]没充网费[/]"
@@ -52,12 +57,17 @@ namespace SudaEasyWebLogger {
             continue;
           }
           DisplayIp(ip);
-          DisplayDelay(1);
-          if (!_loginService.TryLogin(_profile, ip)) {
+
+          bool loginSuccsess = AnsiConsole.Status()
+            .Spinner(Spinner.Known.Dots)
+            .Start("正在登录...", ctx => {
+              return _loginService.TryLogin(_profile, ip);
+            });
+          if (!loginSuccsess) {
             AnsiConsole.MarkupLine("\n[red]登录失败[/]\n");
             AnsiConsole.MarkupLine(
-              "请检查你的[yellow]配置信息[/]是否正确，抑或是你[yellow]没有连网[/]"
-               + "或是[yellow]没充网费[/]"
+              "请检查你的[yellow]配置信息[/]是否正确，以及你的互联网连接情况，"
+               + "并确认你的[yellow]网络资费[/]充足"
               );
             AnsiConsole.MarkupLine("\n[gray]请按任意键重试...[/]");
             Console.ReadKey(true);
