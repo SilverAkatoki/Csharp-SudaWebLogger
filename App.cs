@@ -16,9 +16,9 @@ namespace SudaEasyWebLogger {
         DisplayTitle();
         EnsureProfileLoaded();
         DisplayProfile(_profile);
-  
+
         UserAction userAction = GetUserAction();
-  
+
         switch (userAction) {
           case UserAction.Exit:
             HandleExit();
@@ -44,7 +44,7 @@ namespace SudaEasyWebLogger {
         }
       }
     }
-    
+
     private void PromptForNewProfile() {
       AnsiConsole.MarkupLine("正在开始创建新的配置文件");
       AnsiConsole.MarkupLine("\n[gray]请按任意键继续...[/]");
@@ -54,22 +54,22 @@ namespace SudaEasyWebLogger {
       _hasChangedProfile = true;
       DisplayTitle();
     }
-    
+
     private void HandleChangeProfile() {
       AnsiConsole.Clear();
       _profile = CreateLoginProfile();
       _hasChangedProfile = true;
     }
-    
+
     private void HandleLogin() {
       string ip = string.Empty;
       if (!TryRetrieveIp(ref ip)) {
         DisplayIpError();
         return;
       }
-    
+
       DisplayIp(ip);
-    
+
       if (!TryLogin(ip)) {
         DisplayLoginError();
       } else {
@@ -77,23 +77,27 @@ namespace SudaEasyWebLogger {
         Thread.Sleep(500);
       }
     }
-    
+
     private bool TryRetrieveIp(ref string ip) {
-      return AnsiConsole.Status()
+      string tempIp = ip;
+      bool result = AnsiConsole.Status()
           .Spinner(Spinner.Known.Dots)
           .Start("正在获取 IP 地址...", ctx => {
-              return _loginService.TryGetIp(ref ip);
+            return _loginService.TryGetIp(ref tempIp);
           });
+      ip = tempIp;
+      return result;
     }
-    
-    private void DisplayIpError() {
+
+    private static void DisplayIpError() {
       AnsiConsole.MarkupLine("\n[red]无法获取本机 IP 地址[/]\n");
-      AnsiConsole.MarkupLine("请检查你的[yellow]互联网连接情况[/], 或者是你[yellow]没充网费[/]");
+      AnsiConsole.MarkupLine("请检查你的[yellow]互联网连接情况[/]" +
+        "（未连接 / 已登录时无法获取）, 或者是你的[yellow]网络资费[/]不足");
       AnsiConsole.MarkupLine("\n[gray]请按任意键重试...[/]");
       Console.ReadKey(true);
       AnsiConsole.Clear();
     }
-    
+
     private bool TryLogin(string ip) {
       return AnsiConsole.Status()
           .Spinner(Spinner.Known.Dots)
@@ -101,8 +105,8 @@ namespace SudaEasyWebLogger {
             return _loginService.TryLogin(_profile, ip);
           });
     }
-    
-    private void DisplayLoginError() {
+
+    private static void DisplayLoginError() {
       AnsiConsole.MarkupLine("\n[red]登录失败[/]\n");
       AnsiConsole.MarkupLine(
           "请检查你的[yellow]配置信息[/]是否正确，以及你的互联网连接情况，"
@@ -112,13 +116,13 @@ namespace SudaEasyWebLogger {
       Console.ReadKey(true);
       AnsiConsole.Clear();
     }
-    
+
     private void HandleExit() {
       if (_hasChangedProfile) {
         SaveProfile();
       }
     }
-    
+
     private void SaveProfile() {
       if (!_profileService.TryWriteProfile(_profile)) {
         AnsiConsole.MarkupLine("\n[red]保存配置文件错误[/]");
@@ -144,7 +148,7 @@ namespace SudaEasyWebLogger {
         AccountType.ChinaMobile => "中国移动",
         AccountType.ChinaUnicom => "中国联通",
         AccountType.Suda => "校园网",
-        _ => throw new InvalidEnumArgumentException("运营商类型错误"),
+        _ => throw new InvalidEnumArgumentException(),
       } ?? "----";
 
       var profileGrid = new Grid()
@@ -178,7 +182,7 @@ namespace SudaEasyWebLogger {
         "按此配置登录" => UserAction.LogInOrRetry,
         "修改配置文件" => UserAction.ChangeProfile,
         "退出" => UserAction.Exit,
-        _ => throw new InvalidCastException("操作未完全对应枚举值"),
+        _ => throw new InvalidEnumArgumentException(),
       };
     }
 
