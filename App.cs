@@ -49,7 +49,8 @@ namespace SudaEasyWebLogger {
           if (!ipRetrieved) {
             AnsiConsole.MarkupLine("\n[red]无法获取本机 IP 地址[/]\n");
             AnsiConsole.MarkupLine(
-              "请检查你的[yellow]互联网连接情况[/], 或者是你[yellow]没充网费[/]"
+              "请检查你的互联网连接情况（若已登录则无法获取 IP），"
+               + "并确认你的[yellow]网络资费[/]充足"
               );
             AnsiConsole.MarkupLine("\n[gray]请按任意键重试...[/]");
             Console.ReadKey(true);
