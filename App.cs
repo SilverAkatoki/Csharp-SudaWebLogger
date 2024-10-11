@@ -41,6 +41,7 @@ namespace SudaEasyWebLogger {
         if (!_profileService.TryReadProfile(ref _profile)) {
           AnsiConsole.MarkupLine("[red]当前未检测到配置文件 / 配置文件错误[/]");
           PromptForNewProfile();
+          DisplayTitle();
         }
       }
     }
@@ -52,7 +53,6 @@ namespace SudaEasyWebLogger {
       AnsiConsole.Clear();
       _profile = CreateLoginProfile();
       _hasChangedProfile = true;
-      DisplayTitle();
     }
 
     private void HandleChangeProfile() {
