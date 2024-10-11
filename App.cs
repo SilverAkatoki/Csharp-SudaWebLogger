@@ -1,4 +1,4 @@
-﻿using Spectre.Console;
+using Spectre.Console;
 using System.ComponentModel;
 
 namespace SudaEasyWebLogger {
@@ -14,96 +14,122 @@ namespace SudaEasyWebLogger {
     public void Run() {
       while (true) {
         DisplayTitle();
-
-        if (!_hasReadedProfile) {
-          _hasReadedProfile = true;
-          if (!_profileService.TryReadProfile(ref _profile)) {
-            AnsiConsole.MarkupLine("[red]当前未检测到配置文件 / 配置文件错误[/]");
-            AnsiConsole.MarkupLine("正在开始创建新的配置文件");
-            AnsiConsole.MarkupLine("\n[gray]请按任意键继续...[/]");
-            Console.ReadKey(true);
-            AnsiConsole.Clear();
-            _profile = CreateLoginProfile();
-            _hasChangedProfile = true;
-            DisplayTitle();
-          }
-        }
-
+        EnsureProfileLoaded();
         DisplayProfile(_profile);
-
+  
         UserAction userAction = GetUserAction();
-
-        if (userAction == UserAction.Exit) {
-          break;
-        } else if (userAction == UserAction.ChangeProfile) {
-          AnsiConsole.Clear();
-          _profile = CreateLoginProfile();
-          _hasChangedProfile = true;
-        } else if (userAction == UserAction.LogInOrRetry) {
-          string ip = string.Empty;
-          bool ipRetrieved = AnsiConsole.Status()
-            .Spinner(Spinner.Known.Dots)
-            .Start("正在获取 IP 地址...", ctx => {
-              return _loginService.TryGetIp(ref ip);
-            });
-          if (!ipRetrieved) {
-            AnsiConsole.MarkupLine("\n[red]无法获取本机 IP 地址[/]\n");
-            AnsiConsole.MarkupLine(
-              "请检查你的[yellow]互联网连接情况[/], 或者是你[yellow]没充网费[/]"
-              );
-            AnsiConsole.MarkupLine("\n[gray]请按任意键重试...[/]");
-            Console.ReadKey(true);
-            AnsiConsole.Clear();
-            continue;
-          }
-          DisplayIp(ip);
-
-          bool loginSuccsess = AnsiConsole.Status()
-            .Spinner(Spinner.Known.Dots)
-            .Start("正在登录...", ctx => {
-              return _loginService.TryLogin(_profile, ip);
-            });
-          if (!loginSuccsess) {
-            AnsiConsole.MarkupLine("\n[red]登录失败[/]\n");
-            AnsiConsole.MarkupLine(
-              "请检查你的[yellow]配置信息[/]是否正确，以及你的互联网连接情况，"
-               + "并确认你的[yellow]网络资费[/]充足"
-              );
-            AnsiConsole.MarkupLine("\n[gray]请按任意键重试...[/]");
-            Console.ReadKey(true);
-            AnsiConsole.Clear();
-            continue;
-          } else {
-            AnsiConsole.MarkupLine("\n[green]登录成功[/]");
-            Thread.Sleep(500);
+  
+        switch (userAction) {
+          case UserAction.Exit:
+            HandleExit();
+            return;
+          case UserAction.ChangeProfile:
+            HandleChangeProfile();
             break;
-          }
-        } else {
-          throw new InvalidEnumArgumentException();
+          case UserAction.LogInOrRetry:
+            HandleLogin();
+            break;
+          default:
+            throw new InvalidEnumArgumentException();
         }
       }
-      if (_hasChangedProfile) {
-        if (!_profileService.TryWriteProfile(_profile)) {
-          AnsiConsole.MarkupLine("\n[red]保存配置文件错误[/]");
-          AnsiConsole.MarkupLine("请于再次创建配置文件时尝试保存");
-          AnsiConsole.MarkupLine("\n[gray]按任意键关闭此窗口...[/]");
-          Console.ReadKey(true);
+    }
+
+    private void EnsureProfileLoaded() {
+      if (!_hasReadedProfile) {
+        _hasReadedProfile = true;
+        if (!_profileService.TryReadProfile(ref _profile)) {
+          AnsiConsole.MarkupLine("[red]当前未检测到配置文件 / 配置文件错误[/]");
+          PromptForNewProfile();
         }
+      }
+    }
+    
+    private void PromptForNewProfile() {
+      AnsiConsole.MarkupLine("正在开始创建新的配置文件");
+      AnsiConsole.MarkupLine("\n[gray]请按任意键继续...[/]");
+      Console.ReadKey(true);
+      AnsiConsole.Clear();
+      _profile = CreateLoginProfile();
+      _hasChangedProfile = true;
+      DisplayTitle();
+    }
+    
+    private void HandleChangeProfile() {
+      AnsiConsole.Clear();
+      _profile = CreateLoginProfile();
+      _hasChangedProfile = true;
+    }
+    
+    private void HandleLogin() {
+      string ip = string.Empty;
+      if (!TryRetrieveIp(ref ip)) {
+        DisplayIpError();
+        return;
+      }
+    
+      DisplayIp(ip);
+    
+      if (!TryLogin(ip)) {
+        DisplayLoginError();
+      } else {
+        AnsiConsole.MarkupLine("\n[green]登录成功[/]");
+        Thread.Sleep(500);
+      }
+    }
+    
+    private bool TryRetrieveIp(ref string ip) {
+      return AnsiConsole.Status()
+          .Spinner(Spinner.Known.Dots)
+          .Start("正在获取 IP 地址...", ctx => {
+              return _loginService.TryGetIp(ref ip);
+          });
+    }
+    
+    private void DisplayIpError() {
+      AnsiConsole.MarkupLine("\n[red]无法获取本机 IP 地址[/]\n");
+      AnsiConsole.MarkupLine("请检查你的[yellow]互联网连接情况[/], 或者是你[yellow]没充网费[/]");
+      AnsiConsole.MarkupLine("\n[gray]请按任意键重试...[/]");
+      Console.ReadKey(true);
+      AnsiConsole.Clear();
+    }
+    
+    private bool TryLogin(string ip) {
+      return AnsiConsole.Status()
+          .Spinner(Spinner.Known.Dots)
+          .Start("正在登录...", ctx => {
+            return _loginService.TryLogin(_profile, ip);
+          });
+    }
+    
+    private void DisplayLoginError() {
+      AnsiConsole.MarkupLine("\n[red]登录失败[/]\n");
+      AnsiConsole.MarkupLine(
+          "请检查你的[yellow]配置信息[/]是否正确，以及你的互联网连接情况，"
+          + "并确认你的[yellow]网络资费[/]充足"
+      );
+      AnsiConsole.MarkupLine("\n[gray]请按任意键重试...[/]");
+      Console.ReadKey(true);
+      AnsiConsole.Clear();
+    }
+    
+    private void HandleExit() {
+      if (_hasChangedProfile) {
+        SaveProfile();
+      }
+    }
+    
+    private void SaveProfile() {
+      if (!_profileService.TryWriteProfile(_profile)) {
+        AnsiConsole.MarkupLine("\n[red]保存配置文件错误[/]");
+        AnsiConsole.MarkupLine("请于再次创建配置文件时尝试保存");
+        AnsiConsole.MarkupLine("\n[gray]按任意键关闭此窗口...[/]");
+        Console.ReadKey(true);
       }
     }
 
     private static void DisplayIp(string ip) {
       AnsiConsole.MarkupLine($"获取到本地 IP 地址: [yellow]{ip}[/]");
-    }
-
-    private static void DisplayDelay(int seconds = 1) {
-      AnsiConsole.Status()
-              .Spinner(Spinner.Known.Dots)
-              .Start("登录中...", ctx => {
-                for (int i = 0; i < seconds * 10; i++) {
-                  Thread.Sleep(100);
-                }
-              });
     }
 
     private static void DisplayTitle() {
