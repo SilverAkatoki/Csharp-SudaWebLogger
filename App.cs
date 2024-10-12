@@ -6,8 +6,8 @@ namespace SudaEasyWebLogger {
     enum UserAction { LogInOrRetry, ChangeProfile, Exit }
 
     private LoginProfile _profile;
-    private readonly IProfileService _profileService = new ProfileService();
-    private readonly ILoginService _loginService = new LoginService();
+    private readonly ProfileService _profileService = new();
+    private readonly LoginService _loginService = new();
     private bool _hasReadedProfile = false;
     private bool _hasChangedProfile = false;
 
