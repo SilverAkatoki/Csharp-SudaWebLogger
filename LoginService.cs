@@ -33,7 +33,7 @@ namespace SudaEasyWebLogger {
     }
 
     public bool TryLogin(LoginProfile loginProfile, string ip) {
-      _strategy = loginProfile.AccountType switch {
+      _strategy = loginProfile.accountType switch {
         AccountType.ChinaTelecom => new ChinaTelecomLogin(),
         AccountType.ChinaMobile => new ChinaMobileLogin(),
         AccountType.ChinaUnicom => new ChinaUnicomLogin(),
@@ -61,8 +61,8 @@ namespace SudaEasyWebLogger {
             "account=%2C0%2C{0}%40zgyd&user_password={1}&wlan_user_ip=" +
             "{2}&wlan_user_ipv6=&wlan_user_mac=000000000000&wlan_ac_ip=" +
             "&wlan_ac_name=&jsVersion=3.3.3&v={3}\r\n",
-            loginProfile.Account,
-            loginProfile.Password,
+            loginProfile.account,
+            loginProfile.password,
             ip,
             complement);
       try {

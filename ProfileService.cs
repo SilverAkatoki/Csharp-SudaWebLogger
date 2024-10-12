@@ -12,9 +12,9 @@ namespace SudaEasyWebLogger {
   /// 用户登录配置
   /// </summary>
   public struct LoginProfile {
-    public AccountType AccountType { get; set; }
-    public string Account { get; set; }
-    public string Password { get; set; }
+    public AccountType accountType;
+    public string account;
+    public string password;
   }
 
   /// <summary>
@@ -52,15 +52,15 @@ namespace SudaEasyWebLogger {
       }
 
       try {
-        profile.Account = GetConfigValue("Account", string.Empty);
-        profile.AccountType = GetConfigValue("AccountType", string.Empty) switch {
+        profile.account = GetConfigValue("Account", string.Empty);
+        profile.accountType = GetConfigValue("AccountType", string.Empty) switch {
           "ChinaTelecom" => AccountType.ChinaTelecom,
           "ChinaMobile" => AccountType.ChinaMobile,
           "ChinaUnicom" => AccountType.ChinaUnicom,
           "Suda" => AccountType.Suda,
           _ => throw new InvalidEnumArgumentException(),
         };
-        profile.Password = GetConfigValue("Password", string.Empty);
+        profile.password = GetConfigValue("Password", string.Empty);
       } catch (Exception) {
         return false;
       }
@@ -75,9 +75,9 @@ namespace SudaEasyWebLogger {
           return true;
         }
 
-        SetConfigValue("Account", profile.Account);
-        SetConfigValue("AccountType", profile.AccountType.ToString());
-        SetConfigValue("Password", profile.Password);
+        SetConfigValue("Account", profile.account);
+        SetConfigValue("AccountType", profile.accountType.ToString());
+        SetConfigValue("Password", profile.password);
 
         _config.Save(ConfigurationSaveMode.Modified);
 
@@ -106,9 +106,9 @@ namespace SudaEasyWebLogger {
       string configContent = $@"<?xml version=""1.0"" encoding=""utf-8"" ?>
 <configuration>
   <appSettings>
-    <add key=""Account"" value=""{profile.Account}"" />
-    <add key=""AccountType"" value=""{profile.AccountType}"" />
-    <add key=""Password"" value=""{profile.Password}"" />
+    <add key=""Account"" value=""{profile.account}"" />
+    <add key=""AccountType"" value=""{profile.accountType}"" />
+    <add key=""Password"" value=""{profile.password}"" />
   </appSettings>
 </configuration>";
 

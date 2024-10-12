@@ -142,8 +142,8 @@ namespace SudaEasyWebLogger {
     }
 
     private static void DisplayProfile(LoginProfile profile) {
-      string account = profile.Account ?? "------";
-      string accountType = profile.AccountType switch {
+      string account = profile.account ?? "------";
+      string accountType = profile.accountType switch {
         AccountType.ChinaTelecom => "中国电信",
         AccountType.ChinaMobile => "中国移动",
         AccountType.ChinaUnicom => "中国联通",
@@ -190,12 +190,12 @@ namespace SudaEasyWebLogger {
       AnsiConsole.Write(
         new Rule("[yellow]创建 / 更改登录配置[/]").LeftJustified());
       var profile = new LoginProfile();
-      var accountType = AnsiConsole.Prompt(
+      string accountType = AnsiConsole.Prompt(
         new SelectionPrompt<string>()
             .PageSize(10)
             .Title("选择你的运营商：\n[gray]使用 ↑ 和 ↓ 来切换选项，Enter 键确认[/]")
             .AddChoices(["中国电信", "中国移动", "中国联通", "校园网"]));
-      profile.AccountType = accountType switch {
+      profile.accountType = accountType switch {
         "中国电信" => AccountType.ChinaTelecom,
         "中国移动" => AccountType.ChinaMobile,
         "中国联通" => AccountType.ChinaUnicom,
@@ -203,9 +203,9 @@ namespace SudaEasyWebLogger {
         _ => throw new InvalidCastException(),
       };
       AnsiConsole.Markup($"选择你的运营商:{accountType}\n");
-      profile.Account = AnsiConsole.Prompt(
+      profile.account = AnsiConsole.Prompt(
             new TextPrompt<string>("输入你的登录账号(一般是学号):")).ToString();
-      profile.Password = AnsiConsole.Prompt(
+      profile.password = AnsiConsole.Prompt(
             new TextPrompt<string>("输入你的密码(为了防窥没有显示密码字符):")
               .Secret('\0'));
       AnsiConsole.MarkupLine("\n[green]登录配置创建完成！[/]");
