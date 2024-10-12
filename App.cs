@@ -63,7 +63,7 @@ namespace SudaEasyWebLogger {
 
     private void HandleLogin() {
       string ip = string.Empty;
-      if (!TryRetrieveIp(ref ip)) {
+      if (!TryGetIp(ref ip)) {
         DisplayIpError();
         return;
       }
@@ -78,7 +78,7 @@ namespace SudaEasyWebLogger {
       }
     }
 
-    private bool TryRetrieveIp(ref string ip) {
+    private bool TryGetIp(ref string ip) {
       string tempIp = ip;
       bool result = AnsiConsole.Status()
           .Spinner(Spinner.Known.Dots)

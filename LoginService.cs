@@ -38,7 +38,7 @@ namespace SudaEasyWebLogger {
         AccountType.ChinaMobile => new ChinaMobileLogin(),
         AccountType.ChinaUnicom => new ChinaUnicomLogin(),
         AccountType.Suda => new SudaLogin(),
-        _ => throw new InvalidEnumArgumentException("枚举值错误"),
+        _ => throw new InvalidEnumArgumentException(),
       };
       return _strategy.TryLogin(loginProfile, ip, _httpClient);
     }
